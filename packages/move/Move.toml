@@ -1,0 +1,16 @@
+[package]
+name = 'emotion_apt'
+version = '1.0.0'
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-framework"
+
+[dependencies.AptosToken]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-token"
+
+[addresses]
+EmotionApt='0x43b0d110918dd211814fb124a6a1ac9673f408e592f6a5811965062f2f4241b5'

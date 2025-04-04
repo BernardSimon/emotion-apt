@@ -1,24 +1,7 @@
+packages/.DS_Store
 .idea
-scaffold-move/packages/move/backup
-# dependencies
 node_modules
-
-# yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# eslint
-.eslintcache
-
-# misc
+packages/go/utils/.DS_Store
+packages/go/.DS_Store
+packages/go/config.yaml
 .DS_Store
-
-# IDE
-.vscode
-
-# cli
-dist
