@@ -60,7 +60,7 @@ func Login(c *gin.Context) {
 		c.Set("errMsg", "时间戳错误")
 		return
 	}
-	if !aptosClient.CheckSign(loginRequest.Address, loginRequest.Sign, loginRequest.Timestamp, loginRequest.Salt) {
+	if !aptosClient.CheckSign(loginRequest.FullMsg, loginRequest.Sign, loginRequest.Timestamp, loginRequest.Salt) {
 		c.Set("status", 2)
 		c.Set("errMsg", "签名错误")
 		return

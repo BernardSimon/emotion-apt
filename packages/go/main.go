@@ -131,7 +131,8 @@ func RunTests() {
 	// 优化测试函数，添加测试上下文
 	// ctx := context.Background()
 	log.Println("开始执行测试用例...")
-	_, _ = aptosClient.GenerateCoin()
+	resp, _ := aptosClient.CreatScale()
+	fmt.Println(resp)
 	os.Exit(0)
 }
 

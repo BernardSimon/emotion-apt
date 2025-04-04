@@ -210,7 +210,7 @@ const ChatPage = () => {
           sign,
           timestamp: signText,
           salt: salt.toString(),
-          full_msg: s.fullMessage,
+          full_msg: account.publicKey.toString(),
         };
         LoginApi(params)
           .then(res => {

@@ -39,13 +39,14 @@ module EmotionApt::scales {
   public entry fun create_scales(account: &signer, name: String, description: String, content: String, price: u64) acquires Scales {
     let addr = signer::address_of(account);
     assert!(addr == @0x43b0d110918dd211814fb124a6a1ac9673f408e592f6a5811965062f2f4241b5, NotPermission );
+    let new_id=0;
     let oldScales = Scales {
       scales: vector<Scale>[],
     };
     if (exists<Scales>(signer::address_of(account))) {
-      let _oldScales = move_from<Scales>(signer::address_of(account));
+      oldScales = move_from<Scales>(signer::address_of(account));
+      new_id = vector::borrow(&oldScales.scales, vector::length(&oldScales.scales)-1).id+1;
     };
-    let new_id = vector::borrow(&oldScales.scales, vector::length(&oldScales.scales)-1).id+1;
     let record = Scale {
       id: new_id,
       name,
@@ -133,6 +134,17 @@ module EmotionApt::scales {
     };
 
     abort NoScales
+  }
+
+  #[view]
+  public fun get_all_scales(): Scales acquires Scales {
+    if(!exists<Scales>(@0x43b0d110918dd211814fb124a6a1ac9673f408e592f6a5811965062f2f4241b5)) {
+      return Scales {
+        scales: vector[]
+      }
+    };
+    let records = borrow_global<Scales>(@0x43b0d110918dd211814fb124a6a1ac9673f408e592f6a5811965062f2f4241b5);
+    return *records
   }
 
   #[view]

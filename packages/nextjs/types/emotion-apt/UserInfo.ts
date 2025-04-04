@@ -16,3 +16,15 @@ export type Record = {
   description: string;
   timestamp: string;
 };
+
+export type Scale = {
+  id: number;
+  name: string;
+  description: string;
+  content: string;
+  price: number;
+};
+
+export type Scales = {
+  scales: Scale[];
+};

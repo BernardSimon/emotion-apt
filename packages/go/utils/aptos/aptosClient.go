@@ -35,16 +35,18 @@ func CheckSign(address, sign, originalMessage, nonce string) bool {
 		return false
 	}
 	// 2. 地址格式验证（32字节hex带0x前缀）
-	if !strings.HasPrefix(address, "0x") || len(address) != 66 { // 0x + 64 hex chars
-		return false
-	}
-	addressAptos := &aptos.AccountAddress{}
-	err := addressAptos.ParseStringRelaxed(address)
-	account, err := client.Account(*addressAptos)
-	if err != nil {
-		return false
-	}
-	publicKeyBytes, err := account.AuthenticationKey()
+	//if !strings.HasPrefix(address, "0x") || len(address) != 66 { // 0x + 64 hex chars
+	//	return false
+	//}
+	//addressAptos := &aptos.AccountAddress{}
+	//err := addressAptos.ParseStringRelaxed(address)
+	//account, err := client.Account(*addressAptos)
+	//if err != nil {
+	//	return false
+	//}
+	//publicKeyBytes, err := account.AuthenticationKey()
+
+	publicKeyBytes, err := hex.DecodeString(strings.TrimPrefix(address, "0x"))
 	if err != nil || len(publicKeyBytes) != ed25519.PublicKeySize {
 		return false
 	}
@@ -113,11 +115,19 @@ func GenerateCoin() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	simulationResult, err := client.SimulateTransaction(rawTxn, account)
+	_, err = client.SimulateTransaction(rawTxn, account)
 	if err != nil {
 		return "", err
 	}
-	return simulationResult[0].VmStatus, nil
+	signedTxn, err := rawTxn.SignedTransaction(account)
+	if err != nil {
+		return "", err
+	}
+	_, err = client.SubmitTransaction(signedTxn)
+	if err != nil {
+		return "", err
+	}
+	return "success", nil
 }
 
 func CreateAccountFromKeys(addressHex string, authKeyHex string) (*aptos.Account, error) {
@@ -138,4 +148,62 @@ func CreateAccountFromKeys(addressHex string, authKeyHex string) (*aptos.Account
 		return nil, err
 	}
 	return account, nil
+}
+
+func CreatScale() (string, error) {
+	if client == nil {
+		_ = Init()
+	}
+	const name = "SCL-90"
+	const content = "SCL-90"
+	const description = "症状自评量表，又称90项症状清单(symptom checklist 90, SCL-90)，由Derogatis等编制于1973年 [1]，包括9个因子，共90个项目，用于心理健康与行为问题的测量"
+	const price = 20000
+	priceFormat, err := bcs.SerializeU64(price)
+	var nameSerializer bcs.Serializer
+	nameSerializer.WriteString(name)
+	nameFormat := nameSerializer.ToBytes()
+	contentSerializer := bcs.Serializer{}
+	contentSerializer.WriteString(content)
+	contentFormat := contentSerializer.ToBytes()
+	descriptionSerializer := bcs.Serializer{}
+	descriptionSerializer.WriteString(description)
+	descriptionFormat := descriptionSerializer.ToBytes()
+	address := ""
+	key := ""
+	account, err := CreateAccountFromKeys(address, key)
+	if err != nil {
+		return "", err
+	}
+	rawTxn, err := client.BuildTransaction(account.AccountAddress(), aptos.TransactionPayload{
+		Payload: &aptos.EntryFunction{
+			Module: aptos.ModuleId{
+				Address: account.AccountAddress(),
+				Name:    "scales",
+			},
+			Function: "create_scales",
+			ArgTypes: []aptos.TypeTag{},
+			Args: [][]byte{
+				nameFormat,
+				descriptionFormat,
+				contentFormat,
+				priceFormat,
+			},
+		}})
+	if err != nil {
+		return "", err
+	}
+	_, err = client.SimulateTransaction(rawTxn, account)
+	if err != nil {
+		return "", err
+	}
+	signedTxn, err := rawTxn.SignedTransaction(account)
+	if err != nil {
+		return "", err
+	}
+	resp, err := client.SubmitTransaction(signedTxn)
+	println(resp)
+	if err != nil {
+		return "", err
+	}
+	return "success", nil
 }

@@ -5,43 +5,30 @@ import { NextPage } from "next";
 import { toast } from "react-hot-toast";
 import { useView } from "~~/hooks/scaffold-move/useView";
 import { useGlobalState } from "~~/services/store/store";
-import { Record } from "~~/types/emotion-apt/UserInfo";
-import { decryptWithEmbeddedSalt } from "~~/utils/emotion-apt/encrypt";
+import {Record, Scales} from "~~/types/emotion-apt/UserInfo";
 
 const RecordsPage: NextPage = () => {
   const store = useGlobalState();
   const { data, error } = useView({
-    moduleName: "records",
-    functionName: "get_all_records",
-    args: [store.address as `0x${string}`],
+    moduleName: "scales",
+    functionName: "get_all_scales",
   });
-  const [records, setRecords] = useState<Record[]>([]);
-  const recordsEn = useRef<Record[]>([]);
+  const [scales, setScales] = useState<Scales>({ scales: [] });
 
   useEffect(() => {
     if (error) {
       toast.error("Error: " + error);
     }
     if (data) {
-      recordsEn.current = data[0] as unknown as Record[];
-      renderRecords();
+      setScales(data[0] as unknown as Scales);
     }
   }, [data, error, store.password]);
-  const renderRecords = async () => {
-    const recordsLocal = [];
-    for (let i = 0; i < recordsEn.current.length; i++) {
-      const keyword = await decryptWithEmbeddedSalt(store.password, recordsEn.current[i].keywords);
-      const description = await decryptWithEmbeddedSalt(store.password, recordsEn.current[i].description);
-      recordsLocal.push({ keywords: keyword, description: description, timestamp: recordsEn.current[i].timestamp });
-    }
-    setRecords(recordsLocal);
-    console.log(records);
-  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">Scales Store</h1>
 
-      {records.length === 0 ? (
+      {scales.scales.length === 0 ? (
         <div className="alert alert-info shadow-lg">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -56,11 +43,11 @@ const RecordsPage: NextPage = () => {
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          <span>No records found</span>
+          <span>No Scales found</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {records.map((record, index) => (
+          {scales.scales.map((record, index) => (
             <div key={index} className="card bg-base-100 shadow-lg">
               <div className="card-body">
                 <h2 className="card-title text-primary">
@@ -71,30 +58,21 @@ const RecordsPage: NextPage = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  {new Date(parseInt(record.timestamp) * 1000).toLocaleDateString() +
-                    " " +
-                    new Date(parseInt(record.timestamp) * 1000).toLocaleTimeString()}
+                  {record.name}
                 </h2>
-                <div className="badge badge-outline badge-secondary mb-2">
-                  {record.keywords.split(", ").length} tags
-                </div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {record.keywords.split(", ").map((keyword, i) => (
-                    <span key={i} className="badge badge-primary">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="collapse collapse-arrow border border-base-300">
+                <div className="collapse collapse-arrow border border-base-300 collapse-open">
                   <input type="checkbox" />
                   <div className="collapse-title font-medium">View Description</div>
-                  <div className="collapse-content collapse-open">
+                  <div className="collapse-content">
                     <p className="text-gray-500">{record.description}</p>
                   </div>
                 </div>
 
                 <div className="text-sm text-gray-400 mt-4">
+                  <div className="flex justify-between">
+                    <div className="text-gray-500">APT:  {record.price/100000}</div>
+                    <button className="btn btn-primary btn-sm">Buy</button>
+                  </div>
                 </div>
               </div>
             </div>
